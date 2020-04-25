@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">KotlinCoroutines</string>
+    <string name="content_description_movie_image">Movie Image</string>
+    <string name="cant_load_movies">Can\'t load movies!</string>
+</resources>
