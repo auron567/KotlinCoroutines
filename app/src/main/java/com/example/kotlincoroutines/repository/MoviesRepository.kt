@@ -1,11 +1,9 @@
 package com.example.kotlincoroutines.repository
 
 import com.example.kotlincoroutines.data.model.Movie
+import com.example.kotlincoroutines.data.model.Result
 
 interface MoviesRepository {
 
-    fun getMovies(
-        onSuccess: (List<Movie>) -> Unit,
-        onError: (Throwable) -> Unit
-    )
+    suspend fun getMovies(): Result<List<Movie>>
 }

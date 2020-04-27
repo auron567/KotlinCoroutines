@@ -2,12 +2,13 @@ package com.example.kotlincoroutines.repository
 
 import com.example.kotlincoroutines.data.database.MovieDao
 import com.example.kotlincoroutines.data.model.Movie
-import com.example.kotlincoroutines.data.model.MoviesResponse
+import com.example.kotlincoroutines.data.model.Result
 import com.example.kotlincoroutines.data.network.MoviesService
 import com.example.kotlincoroutines.di.API_KEY
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.IOException
 
 class MoviesRepositoryImpl(
@@ -15,30 +16,28 @@ class MoviesRepositoryImpl(
     private val movieDao: MovieDao
 ) : MoviesRepository {
 
-    override fun getMovies(
-        onSuccess: (List<Movie>) -> Unit,
-        onError: (Throwable) -> Unit
-    ) {
-        moviesService.getMovies(API_KEY).enqueue(object : Callback<MoviesResponse> {
-            override fun onResponse(call: Call<MoviesResponse>, response: Response<MoviesResponse>) {
-                val movies = response.body()?.movies ?: emptyList()
+    override suspend fun getMovies(): Result<List<Movie>> = withContext(Dispatchers.IO) {
+        val savedMoviesDeferred = async { movieDao.getMovies() }
 
-                if (movies.isNotEmpty()) {
-                    movieDao.saveMovies(movies)
-                }
-
-                onSuccess(movies)
+        try {
+            val response = moviesService.getMovies(API_KEY).execute()
+            val movies = response.body()?.movies?.also {
+                launch { movieDao.saveMovies(it) }
             }
 
-            override fun onFailure(call: Call<MoviesResponse>, throwable: Throwable) {
-                val savedMovies = movieDao.getMovies()
-
-                if (throwable is IOException && savedMovies.isNotEmpty()) {
-                    onSuccess(savedMovies)
-                } else {
-                    onError(throwable)
-                }
+            if (response.isSuccessful && movies != null) {
+                Result(movies, null)
+            } else {
+                Result(savedMoviesDeferred.await(), null)
             }
-        })
+        } catch (throwable: Throwable) {
+            val savedMovie = savedMoviesDeferred.await()
+
+            if (throwable is IOException && savedMovie.isNotEmpty()) {
+                Result(savedMovie, null)
+            } else {
+                Result(null, throwable)
+            }
+        }
     }
 }

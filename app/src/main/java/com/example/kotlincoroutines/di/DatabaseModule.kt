@@ -17,7 +17,6 @@ val databaseModule = module {
 
 private fun provideMovieDatabase(application: Application): MovieDatabase {
     return Room.databaseBuilder(application, MovieDatabase::class.java, "movie_database")
-        .allowMainThreadQueries()
         .build()
 }
 
