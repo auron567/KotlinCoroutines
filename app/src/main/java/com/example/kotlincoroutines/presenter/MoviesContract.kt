@@ -7,6 +7,8 @@ interface MoviesContract {
     interface Presenter {
 
         fun getMovies()
+
+        fun stop()
     }
 
     interface View {

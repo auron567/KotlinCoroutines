@@ -27,7 +27,6 @@ class MoviesActivity : AppCompatActivity(), MoviesContract.View {
         setMoviesRecyclerView()
 
         presenter.setView(this)
-        presenter.getMovies()
     }
 
     override fun showMovies(movies: List<Movie>) {
@@ -50,5 +49,15 @@ class MoviesActivity : AppCompatActivity(), MoviesContract.View {
         binding.swipeRefreshLayout.setOnRefreshListener {
             presenter.getMovies()
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        presenter.getMovies()
+    }
+
+    override fun onStop() {
+        presenter.stop()
+        super.onStop()
     }
 }
