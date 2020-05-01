@@ -10,8 +10,12 @@ class MoviesPresenter(private val repository: MoviesRepository)
 
     private val parentJob = SupervisorJob()
 
+    private val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        Timber.e(throwable.localizedMessage)
+    }
+
     override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + parentJob
+        get() = Dispatchers.Main + parentJob + coroutineExceptionHandler
 
     override fun getMovies() {
         launch {

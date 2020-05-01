@@ -8,6 +8,7 @@ import com.example.kotlincoroutines.data.network.MoviesService
 import com.example.kotlincoroutines.di.API_KEY
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import java.io.IOException
 
@@ -19,26 +20,28 @@ class MoviesRepositoryImpl(
 
     @Suppress("BlockingMethodInNonBlockingContext")
     override suspend fun getMovies(): Result<List<Movie>> = withContext(contextProvider.context) {
-        val savedMoviesDeferred = async { movieDao.getMovies() }
+        supervisorScope {
+            val savedMoviesDeferred = async { movieDao.getMovies() }
+            val responseDeferred = async { moviesService.getMovies(API_KEY).execute() }
 
-        try {
-            val response = moviesService.getMovies(API_KEY).execute()
-            val movies = response.body()?.movies?.also {
-                launch { movieDao.saveMovies(it) }
-            }
+            val savedMovies = savedMoviesDeferred.await()
+            try {
+                val response = responseDeferred.await()
+                val movies = response.body()?.movies?.also {
+                    launch { movieDao.saveMovies(it) }
+                }
 
-            if (response.isSuccessful && movies != null) {
-                Result(movies, null)
-            } else {
-                Result(savedMoviesDeferred.await(), null)
-            }
-        } catch (throwable: Throwable) {
-            val savedMovie = savedMoviesDeferred.await()
-
-            if (throwable is IOException && savedMovie.isNotEmpty()) {
-                Result(savedMovie, null)
-            } else {
-                Result(null, throwable)
+                if (response.isSuccessful && movies != null) {
+                    Result(movies, null)
+                } else {
+                    Result(savedMovies, null)
+                }
+            } catch (throwable: Throwable) {
+                if (throwable is IOException && savedMovies.isNotEmpty()) {
+                    Result(savedMovies, null)
+                } else {
+                    Result(null, throwable)
+                }
             }
         }
     }
