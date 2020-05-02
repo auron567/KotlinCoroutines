@@ -1,5 +1,6 @@
 package com.example.kotlincoroutines.presenter
 
+import com.example.kotlincoroutines.app.coroutineLog
 import com.example.kotlincoroutines.repository.MoviesRepository
 import kotlinx.coroutines.*
 import timber.log.Timber
@@ -19,6 +20,8 @@ class MoviesPresenter(private val repository: MoviesRepository)
 
     override fun getMovies() {
         launch {
+            Timber.d(coroutineLog)
+
             delay(500)
             val result = repository.getMovies()
 

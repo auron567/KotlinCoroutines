@@ -1,5 +1,6 @@
 package com.example.kotlincoroutines.repository
 
+import com.example.kotlincoroutines.app.coroutineLog
 import com.example.kotlincoroutines.contextprovider.CoroutineContextProvider
 import com.example.kotlincoroutines.data.database.MovieDao
 import com.example.kotlincoroutines.data.model.Movie
@@ -10,6 +11,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.io.IOException
 
 class MoviesRepositoryImpl(
@@ -21,14 +23,25 @@ class MoviesRepositoryImpl(
     @Suppress("BlockingMethodInNonBlockingContext")
     override suspend fun getMovies(): Result<List<Movie>> = withContext(contextProvider.context) {
         supervisorScope {
-            val savedMoviesDeferred = async { movieDao.getMovies() }
-            val responseDeferred = async { moviesService.getMovies(API_KEY).execute() }
+            Timber.d(coroutineLog)
+
+            val savedMoviesDeferred = async {
+                Timber.d(coroutineLog)
+                movieDao.getMovies()
+            }
+            val responseDeferred = async {
+                Timber.d(coroutineLog)
+                moviesService.getMovies(API_KEY).execute()
+            }
 
             val savedMovies = savedMoviesDeferred.await()
             try {
                 val response = responseDeferred.await()
                 val movies = response.body()?.movies?.also {
-                    launch { movieDao.saveMovies(it) }
+                    launch {
+                        Timber.d(coroutineLog)
+                        movieDao.saveMovies(it)
+                    }
                 }
 
                 if (response.isSuccessful && movies != null) {

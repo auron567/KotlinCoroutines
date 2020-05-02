@@ -22,6 +22,7 @@ class MyApplication : Application() {
         }
 
         setupTimber()
+        setupCoroutinesLog()
     }
 
     private fun setupTimber() {
@@ -29,6 +30,12 @@ class MyApplication : Application() {
             Timber.plant(Timber.DebugTree())
         } else {
             Timber.plant(ReleaseTree())
+        }
+    }
+
+    private fun setupCoroutinesLog() {
+        if (BuildConfig.DEBUG) {
+            System.setProperty("kotlinx.coroutines.debug", "on")
         }
     }
 }
