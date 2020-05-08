@@ -16,7 +16,7 @@ val appModule = module {
     // CoroutineContextProvider instance
     single<CoroutineContextProvider> { provideCoroutineContextProviderImpl(Dispatchers.IO) }
     // MoviesRepository instance
-    single<MoviesRepository> { provideMovieRepositoryImpl(get(), get(), get()) }
+    single<MoviesRepository> { provideMovieRepositoryImpl(get(), get()) }
     // MoviesPresenter instance
     factory { provideMoviesPresenter(get()) }
 }
@@ -25,12 +25,8 @@ private fun provideCoroutineContextProviderImpl(context: CoroutineContext): Coro
     return CoroutineContextProviderImpl(context)
 }
 
-private fun provideMovieRepositoryImpl(
-    moviesService: MoviesService,
-    movieDao: MovieDao,
-    contextProvider: CoroutineContextProvider
-): MoviesRepositoryImpl {
-    return MoviesRepositoryImpl(moviesService, movieDao, contextProvider)
+private fun provideMovieRepositoryImpl(moviesService: MoviesService, movieDao: MovieDao): MoviesRepositoryImpl {
+    return MoviesRepositoryImpl(moviesService, movieDao)
 }
 
 private fun provideMoviesPresenter(repository: MoviesRepository): MoviesPresenter {
