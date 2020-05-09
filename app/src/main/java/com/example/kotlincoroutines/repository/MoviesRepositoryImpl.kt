@@ -19,14 +19,14 @@ class MoviesRepositoryImpl(
                 movieDao.saveMovies(it)
             }
 
-            Result(movies, null)
+            Result.Success(movies)
         } catch (throwable: Throwable) {
             val savedMovies = movieDao.getMovies()
 
             if (throwable is IOException && savedMovies.isNotEmpty()) {
-                Result(savedMovies, null)
+                Result.Success(savedMovies)
             } else {
-                Result(null, throwable)
+                Result.Error(throwable)
             }
         }
     }

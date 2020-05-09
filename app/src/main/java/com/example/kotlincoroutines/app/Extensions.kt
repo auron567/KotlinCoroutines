@@ -5,6 +5,9 @@ import android.widget.Toast
 import androidx.annotation.StringRes
 import kotlinx.coroutines.CoroutineScope
 
+val <T> T.exhaustive: T
+    get() = this
+
 val CoroutineScope.coroutineLog: String
     get() = "${Thread.currentThread().name}, context=${this.coroutineContext}"
 
