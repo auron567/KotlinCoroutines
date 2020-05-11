@@ -1,7 +1,7 @@
 package com.example.kotlincoroutines.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.kotlincoroutines.data.model.Movie
+import com.example.kotlincoroutines.MovieDataFactory
 import com.example.kotlincoroutines.data.model.Result
 import com.example.kotlincoroutines.repository.MoviesRepository
 import io.mockk.MockKAnnotations
@@ -57,12 +57,8 @@ class MoviesViewModelTest {
 
     @Test
     fun getMoviesReturnsSuccess() = testCoroutineScope.runBlockingTest {
-        val movie = Movie(
-            id = "419704",
-            title = "Ad Astra",
-            posterPath = "/xBHvZcjRiWyobQ9kxBhO6B2dtRI.jpg"
-        )
-        coEvery { repository.getMovies() } returns Result.Success(listOf(movie))
+        val movies = MovieDataFactory.makeMovieList(20)
+        coEvery { repository.getMovies() } returns Result.Success(movies)
 
         viewModel.getMovies()
         advanceTimeBy(500)
