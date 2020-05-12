@@ -1,6 +1,6 @@
 package com.example.kotlincoroutines.repository
 
-import com.example.kotlincoroutines.MovieDataFactory
+import com.example.kotlincoroutines.utils.MovieDataFactory
 import com.example.kotlincoroutines.data.database.MovieDao
 import com.example.kotlincoroutines.data.model.Result
 import com.example.kotlincoroutines.data.network.MoviesService

@@ -1,4 +1,4 @@
-package com.example.kotlincoroutines
+package com.example.kotlincoroutines.utils
 
 import com.example.kotlincoroutines.data.model.Movie
 import com.example.kotlincoroutines.data.model.MoviesResponse

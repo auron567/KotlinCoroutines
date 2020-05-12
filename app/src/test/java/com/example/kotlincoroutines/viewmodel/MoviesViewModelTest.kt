@@ -1,17 +1,16 @@
 package com.example.kotlincoroutines.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.kotlincoroutines.MovieDataFactory
+import com.example.kotlincoroutines.utils.MovieDataFactory
 import com.example.kotlincoroutines.data.model.Result
 import com.example.kotlincoroutines.repository.MoviesRepository
+import com.example.kotlincoroutines.utils.CoroutineTestRule
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.impl.annotations.MockK
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
-import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -23,10 +22,10 @@ import java.lang.RuntimeException
 class MoviesViewModelTest {
 
     @get:Rule
-    val rule: TestRule = InstantTaskExecutorRule()
+    val instantTaskExecutorRule: TestRule = InstantTaskExecutorRule()
 
-    private val testDispatcher = TestCoroutineDispatcher()
-    private val testCoroutineScope = TestCoroutineScope(testDispatcher)
+    @get:Rule
+    val coroutineTestRule: CoroutineTestRule = CoroutineTestRule()
 
     private lateinit var viewModel: MoviesViewModel
     @MockK lateinit var repository: MoviesRepository
@@ -34,19 +33,11 @@ class MoviesViewModelTest {
     @Before
     fun setup() {
         MockKAnnotations.init(this)
-        Dispatchers.setMain(testDispatcher)
-
         viewModel = MoviesViewModel(repository)
     }
 
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
-        testDispatcher.cleanupTestCoroutines()
-    }
-
     @Test
-    fun getMoviesCallsRepository() = testCoroutineScope.runBlockingTest {
+    fun getMoviesCallsRepository() = coroutineTestRule.runBlockingTest {
         viewModel.getMovies()
         advanceTimeBy(500)
 
@@ -56,7 +47,7 @@ class MoviesViewModelTest {
     }
 
     @Test
-    fun getMoviesReturnsSuccess() = testCoroutineScope.runBlockingTest {
+    fun getMoviesReturnsSuccess() = coroutineTestRule.runBlockingTest {
         val movies = MovieDataFactory.makeMovieList(20)
         coEvery { repository.getMovies() } returns Result.Success(movies)
 
@@ -67,7 +58,7 @@ class MoviesViewModelTest {
     }
 
     @Test
-    fun getMoviesReturnsError() = testCoroutineScope.runBlockingTest {
+    fun getMoviesReturnsError() = coroutineTestRule.runBlockingTest {
         val throwable = RuntimeException()
         coEvery { repository.getMovies() } returns Result.Error(throwable)
 
